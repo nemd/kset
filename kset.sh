@@ -2,28 +2,18 @@
 
 
 menu_context() {
-    contexts=(`kubectl config get-contexts | awk '{print $2}' | grep -v NAME`)
-    
-    PS3="set context: "
-    select ctx in "${contexts[@]}"
-    do
-        printf '%s\n'
-        set_context $ctx
-        exit 0;
-    done
+    local ctx
+    ctx=$(kubectl config get-contexts | sed 1d | awk '{print $2}' | fzf)
+
+    [ -n "ctx" ] && set_context $ctx
 }
 
 menu_namespace() {
     current_context=`kubectl config current-context`
-    namespaces=(`kubectl get ns | awk '{print $1}' | grep -v NAME`)
-
-    PS3="set namespace for $current_context: "
-    select ns in "${namespaces[@]}"
-    do
-        printf '%s\n'
-        set_namespace $current_context $ns
-        exit 0;
-    done
+    local ns
+    ns=$(kubectl get ns | sed 1d | awk '{print $1}' | fzf)
+  
+    [ -n "$ns" ] && set_namespace $current_context $ns
 }
 
 set_context() { kubectl config use-context $1; }
